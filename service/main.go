@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"github.com/pborman/uuid"
+	"reflect"
 )
 
 const (
@@ -33,6 +35,38 @@ type Post struct {
 }
 
 func main() {
+	// Create a client
+      client, err := elastic.NewClient(elastic.SetURL(ES_URL), elastic.SetSniff(false))
+      if err != nil {
+             panic(err)
+             return
+      }
+
+      // Use the IndexExists service to check if a specified index exists.
+      exists, err := client.IndexExists(INDEX).Do()
+      if err != nil {
+             panic(err)
+      }
+      if !exists {
+             // Create a new index.
+             mapping := `{
+                    "mappings":{
+                           "post":{
+                                  "properties":{
+                                         "location":{
+                                                "type":"geo_point"
+                                         }
+                                  }
+                           }
+                    }
+             }
+             `
+             _, err := client.CreateIndex(INDEX).Body(mapping).Do()
+             if err != nil {
+                    // Handle error
+                    panic(err)
+             }
+      }
 	fmt.Println("started-service")
 	http.HandleFunc("/post", handlerPost)
 	http.HandleFunc("/search", handlerSearch)
@@ -50,7 +84,35 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Post received: %s\n", p.Message)
+id := uuid.New()
+      // Save to ES.
+      saveToES(&p, id)
+
+}
+
+// Save a post to ElasticSearch
+func saveToES(p *Post, id string) {
+	// Create a client
+	es_client, err := elastic.NewClient(elastic.SetURL(ES_URL), elastic.SetSniff(false))
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	// Save it to index
+	_, err = es_client.Index().
+		Index(INDEX).
+		Type(TYPE).
+		Id(id).
+		BodyJson(p).
+		Refresh(true).
+		Do()
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	fmt.Printf("Post is saved to Index: %s\n", p.Message)
 }
 
 func handlerSearch(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +124,7 @@ func handlerSearch(w http.ResponseWriter, r *http.Request) {
 		ran = val + "km"
 	}
 
-fmt.Printf( "Search received: %f %f %s\n", lat, lon, ran)
+	fmt.Printf( "Search received: %f %f %s\n", lat, lon, ran)
 
       // Create a client
       client, err := elastic.NewClient(elastic.SetURL(ES_URL), elastic.SetSniff(false))
