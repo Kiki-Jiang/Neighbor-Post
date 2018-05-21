@@ -16,10 +16,10 @@ const (
       TYPE = "post"
       DISTANCE = "200km"
       // Needs to update
-      //PROJECT_ID = "around-xxx"
+      PROJECT_ID = "neighbor-post"
       //BT_INSTANCE = "around-post"
       // Needs to update this URL if you deploy it to cloud.
-      ES_URL = "http://35.197.41.218:9200"
+      ES_URL = "http://35.193.151.184:9200"
 )
 
 type Location struct {
@@ -84,7 +84,7 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-id := uuid.New()
+	id := uuid.New()
       // Save to ES.
       saveToES(&p, id)
 
