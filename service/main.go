@@ -19,7 +19,7 @@ const (
       PROJECT_ID = "neighbor-post"
       //BT_INSTANCE = "around-post"
       // Needs to update this URL if you deploy it to cloud.
-      ES_URL = "http://35.193.151.184:9200"
+      ES_URL = "http://35.202.69.40:9200"
 )
 
 type Location struct {
@@ -85,8 +85,8 @@ func handlerPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := uuid.New()
-      // Save to ES.
-      saveToES(&p, id)
+        // Save to ES.
+        saveToES(&p, id)
 
 }
 
@@ -118,6 +118,7 @@ func saveToES(p *Post, id string) {
 func handlerSearch(w http.ResponseWriter, r *http.Request) {
 	lat, _ := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
 	lon, _ := strconv.ParseFloat(r.URL.Query().Get("lon"), 64)
+
 	// range is optional
 	ran := DISTANCE
 	if val := r.URL.Query().Get("range"); val != "" {
