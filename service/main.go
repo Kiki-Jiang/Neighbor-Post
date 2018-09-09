@@ -50,17 +50,17 @@ func main() {
 	if !exists {
 		// Create a new index.
 		mapping := `{
-								"mappings":{
-											 "post":{
-															"properties":{
-																		 "location":{
-																						"type":"geo_point"
-																		 }
-															}
-											 }
-								}
+			"mappings":{
+				 "post":{
+					"properties":{
+						 "location":{
+							"type":"geo_point"
+						 }
+					}
 				 }
-				 `
+			}
+		 }
+		 `
 		_, err := client.CreateIndex(INDEX).Body(mapping).Do()
 		if err != nil {
 			// Handle error
